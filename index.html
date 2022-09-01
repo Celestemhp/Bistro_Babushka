@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Bistro Babushka</title>
+    <style>
+
+      #holder {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 5%;
+        max-width: 1070px;
+      }
+      article {
+        border: 1px solid blue;
+        padding: 1rem;
+        max-width: 275px;
+        cursor: pointer;
+      }
+      article:hover{
+        box-shadow: 10px 10px 104px -13px rgba(0,0,0,0.75);
+        -webkit-box-shadow: 10px 10px 104px -13px rgba(0,0,0,0.75);
+        -moz-box-shadow: 10px 10px 104px -13px rgba(0,0,0,0.75);
+        background-color: beige;
+      }
+      img {
+        max-width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+      }
+      header {
+        background-color: beige;
+      }
+      h1 {
+        font-family: fantasy;
+      }
+      .navn {
+        font-family: "Segoe UI", Tahoma, Verdana, sans-serif;
+        font-size: 1rem;
+      }
+      .valgt {
+        color: red;
+      }
+      #popup {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000000aa;
+        overflow: scroll;
+      }
+
+      #popup article {
+        max-width: 415px;
+        justify-content: center;
+        align-items: center;
+        margin: 4rem auto;
+        border-radius: 25px;
+        padding: 12px;
+        background-color: beige;
+        overflow: scroll;
+      }
+      .articleHeader {
+        display: grid;
+        justify-content: space-between;
+        grid-template-rows: 3fr;
+      }
+      #luk {
+        padding: 12px 16px;
+        font-size: 20px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Bistro Babushka</h1>
+    </header>
+    <nav>
+      <button data-kategori="alle" class="valgt">Alle</button>
+      <button data-kategori="forretter">Forretter</button>
+      <button data-kategori="hovedretter">Hovedretter</button>
+      <button data-kategori="desserter">Desserter</button>
+      <button data-kategori="sideorders">Sideorders</button>
+      <button data-kategori="drikkevarer">Drikkevarer</button>
+    </nav>
+
+    <main id="holder"></main>
+
+    <template>
+      <article>
+        <img class="billednavn" src="" alt="" />
+        <h2></h2>
+        <p class="kortbeskrivelse"></p>
+        <p class="pris"></p>
+      </article>
+    </template>
+
+    <div id="popup">
+        
+          <article>
+            <div class="articleHeader">
+            <div id="luk"><i class="fa fa-close"></i></div>
+            <h2 class="navn"></h2>
+            </div>
+            <img class="billednavn" src="" alt="" />
+            <p> Oprindelsesregion: <span class="oprindelsesregion"></span> </p>
+              <p> Beskrivelse: <span class="langbeskrivelse" ></span></p>
+              <p> <span class="pris"></span> </p>
+          </article>
+    </div>
+
+    <script>
+      const endpoint = "https://babushka-dd8a.restdb.io/rest/menu";
+      const mereInfo = {
+        headers: {
+          "x-apikey": "600ec2fb1346a1524ff12de4",
+        },
+      };
+
+      async function hentData() {
+        const respons = await fetch(endpoint, mereInfo);
+        retter = await respons.json();
+        // data = json;
+        console.log(retter);
+        vis();
+      }
+
+      function vis() {
+        // console.log(retter);
+        const holder = document.querySelector("#holder");
+        const skabelon = document.querySelector("template").content;
+        holder.textContent = "";
+
+        retter.forEach((ret) => {
+          if (filter === ret.kategori || filter === "alle") {
+            const klon = skabelon.cloneNode(true);
+            klon.querySelector(".billednavn").src = "medium/" + ret.billednavn + "-md.jpg";
+            klon.querySelector(".kortbeskrivelse").textContent = ret.kortbeskrivelse;
+            klon.querySelector(".pris").textContent = "Pris: " + ret.pris + " kr.";
+
+            klon.querySelector("#popup, article").addEventListener("click", () => visDetaljer(ret))
+            
+            // main.appendChild(klon);
+
+            //   klon.querySelector("pris").style.borderRadius = "1em";
+            holder.appendChild(klon);
+          }
+        });
+      }
+      document.querySelector("#popup").addEventListener("click", () => (popup.style.display = "none"));
+
+      let retter;
+      let filter = "alle";
+
+      const filterRetterBtn = document.querySelectorAll("nav button");
+      filterRetterBtn.forEach((button) => button.addEventListener("click", filterRetter));
+
+      function filterRetter() {
+        filter = this.dataset.kategori;
+        document.querySelector(".valgt").classList.remove("valgt");
+        this.classList.add("valgt");
+        vis();
+      }
+
+      function visDetaljer(ret) {
+        // console.log(retDetaljer);      
+        const popup = document.querySelector("#popup");
+        popup.style.display = "flex";
+        popup.querySelector(".billednavn").src = "medium/" + ret.billednavn + "-md.jpg";
+        popup.querySelector(".navn").textContent = ret.navn + " " + ret.navn;
+        popup.querySelector(".oprindelsesregion").textContent = ret.oprindelsesregion;
+        popup.querySelector(".langbeskrivelse").textContent = ret.langbeskrivelse;
+        popup.querySelector(".pris").textContent = "Pris: " + ret.pris + " kr.";
+        // popup.addEventListener("click", () => (popup.style.display = none));
+      }
+      hentData();
+    </script>
+  </body>
+</html>
